@@ -23,7 +23,7 @@ type SOAPDecoder interface {
 
 type SOAPEnvelopeResponse struct {
 	XMLName     xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
-	Header      *SOAPHeaderResponse
+	Header      *SOAPHeaderResponse // 这儿头，设计上不对的，满足不了所有的格式
 	Body        SOAPBodyResponse
 	Attachments []MIMEMultipartAttachment `xml:"attachments,omitempty"`
 }
@@ -32,18 +32,18 @@ type SOAPEnvelope struct {
 	XMLName xml.Name `xml:"soap:Envelope"`
 	XmlNS   string   `xml:"xmlns:soap,attr"`
 
-	Header *SOAPHeader
+	// Header *SOAPHeader
+	Header interface{}
 	Body   SOAPBody
 }
 
 type SOAPHeader struct {
 	XMLName xml.Name `xml:"soap:Header"`
 
-	Headers []interface{}
+	//Headers []interface{}
 }
 type SOAPHeaderResponse struct {
 	XMLName xml.Name `xml:"Header"`
-
 	Headers []interface{}
 }
 
@@ -338,7 +338,8 @@ func WithMIMEMultipartAttachments() Option {
 type Client struct {
 	url         string
 	opts        *options
-	headers     []interface{}
+	//headers     []interface{}
+	Header      interface{}
 	attachments []MIMEMultipartAttachment
 }
 
@@ -362,9 +363,9 @@ func NewClient(url string, opt ...Option) *Client {
 
 // AddHeader adds envelope header
 // For correct behavior, every header must contain a `XMLName` field.  Refer to #121 for details
-func (s *Client) AddHeader(header interface{}) {
-	s.headers = append(s.headers, header)
-}
+//func (s *Client) AddHeader(header interface{}) {
+//	s.headers = append(s.headers, header)
+//}
 
 // AddMIMEMultipartAttachment adds an attachment to the client that will be sent only if the
 // WithMIMEMultipartAttachments option is used
@@ -374,9 +375,9 @@ func (s *Client) AddMIMEMultipartAttachment(attachment MIMEMultipartAttachment) 
 
 // SetHeaders sets envelope headers, overwriting any existing headers.
 // For correct behavior, every header must contain a `XMLName` field.  Refer to #121 for details
-func (s *Client) SetHeaders(headers ...interface{}) {
-	s.headers = headers
-}
+//func (s *Client) SetHeaders(headers ...interface{}) {
+//	s.headers = headers
+//}
 
 // CallContext performs HTTP POST request with a context
 func (s *Client) CallContext(ctx context.Context, soapAction string, request, response interface{}) error {
@@ -418,10 +419,14 @@ func (s *Client) call(ctx context.Context, soapAction string, request, response 
 		XmlNS: XmlNsSoapEnv,
 	}
 
-	if s.headers != nil && len(s.headers) > 0 {
-		envelope.Header = &SOAPHeader{
-			Headers: s.headers,
-		}
+	// if s.headers != nil && len(s.headers) > 0 {
+	//	 envelope.Header = &SOAPHeader{
+	//		Header: s.headers,
+	//	 }
+	//}
+
+	if s.Header != nil {
+		envelope.Header = s.Header
 	}
 
 	envelope.Body.Content = request
