@@ -1,4 +1,4 @@
-module gowsdl
+module github.com/twoflyliu/gowsdl
 
 go 1.15
 
